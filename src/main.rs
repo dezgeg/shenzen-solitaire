@@ -1,4 +1,5 @@
 extern crate rand;
+
 use rand::Rng;
 
 #[derive(Debug, PartialEq, Eq, Copy, Clone)]
@@ -13,6 +14,39 @@ enum Card {
     Number(Suit, u32),
     Dragon(Suit),
     Flower,
+}
+
+#[derive(Debug, PartialEq, Eq, Copy, Clone)]
+enum FreeCell {
+    Free,
+    InUse(Card),
+    // When dragon is placed
+    Flipped,
+}
+
+#[derive(Debug, PartialEq, Eq, Copy, Clone)]
+enum Position {
+    FreeCell(u32),
+    Flower,
+    Pile(u32),
+    Tableau(u32),
+}
+
+#[derive(Debug, PartialEq, Eq, Copy, Clone)]
+enum Move {
+    FlipDragon(Suit),
+    MoveCards(u32, Position, Position),
+}
+
+#[derive(Debug, PartialEq, Eq)]
+struct Playfield {
+    freecells: [FreeCell; 3],
+    // Should only be None or Some(Flower)
+    flower: Option<Card>,
+    // Topmost card of the pile
+    piles: [Option<Card>; 3],
+    // Main playfield, works as a stack (so topmost card last in the Vec)
+    tableau: [Vec<Card>; 8],
 }
 
 fn make_deck() -> Vec<Card> {
