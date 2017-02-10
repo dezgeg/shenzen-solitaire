@@ -49,6 +49,27 @@ struct Playfield {
     tableau: [Vec<Card>; 8],
 }
 
+fn get_card_at(playfield: Playfield, pos: Position) -> Option<Card> {
+    match pos {
+        Position::FreeCell(i) => match playfield.freecells[i as usize] {
+            FreeCell::InUse(card) => Some(card),
+            _ => None,
+        },
+        Position::Flower => playfield.flower,
+        Position::Pile(i) => playfield.piles[i as usize],
+        Position::Tableau(i) => playfield.tableau[i as usize].last().map(|x| *x),
+    }
+}
+
+fn is_legal_move(playfield: Playfield, m: Move) -> bool {
+    match m {
+        Move::FlipDragon(_) => unreachable!(),
+        Move::MoveCards(count, from, to) => {
+            unreachable!();
+        }
+    }
+}
+
 fn make_deck() -> Vec<Card> {
     let mut ret = Vec::<Card>::new();
     ret.push(Card::Flower);
