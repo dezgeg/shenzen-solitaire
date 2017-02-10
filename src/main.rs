@@ -1,3 +1,6 @@
+extern crate rand;
+use rand::Rng;
+
 #[derive(Debug, PartialEq, Eq, Copy, Clone)]
 enum Suit {
     Red,
@@ -25,6 +28,13 @@ fn make_deck() -> Vec<Card> {
     ret
 }
 
+fn make_shuffled_deck() -> Vec<Card> {
+    let mut ret = make_deck();
+    rand::thread_rng().shuffle(ret.as_mut_slice());
+    ret
+}
+
 fn main() {
     println!("deck: {:?}", make_deck());
+    println!("shuffled deck: {:?}", make_shuffled_deck());
 }
