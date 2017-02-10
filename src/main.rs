@@ -77,7 +77,9 @@ fn make_deck() -> Vec<Card> {
         for number in 1..(9 + 1) {
             ret.push(Card::Number(suit, number));
         }
-        ret.push(Card::Dragon(suit));
+        for i in 0..4 {
+            ret.push(Card::Dragon(suit));
+        }
     }
 
     ret
@@ -92,4 +94,9 @@ fn make_shuffled_deck() -> Vec<Card> {
 fn main() {
     println!("deck: {:?}", make_deck());
     println!("shuffled deck: {:?}", make_shuffled_deck());
+}
+
+#[test]
+fn test_make_deck() {
+    assert_eq!(make_deck().len(), 40);
 }
