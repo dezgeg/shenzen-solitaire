@@ -49,7 +49,7 @@ struct Playfield {
     tableau: [Vec<Card>; 8],
 }
 
-fn get_card_at(playfield: Playfield, pos: Position) -> Option<Card> {
+fn get_card_at(playfield: &Playfield, pos: Position) -> Option<Card> {
     match pos {
         Position::FreeCell(i) => match playfield.freecells[i as usize] {
             FreeCell::InUse(card) => Some(card),
@@ -99,4 +99,43 @@ fn main() {
 #[test]
 fn test_make_deck() {
     assert_eq!(make_deck().len(), 40);
+}
+
+#[test]
+fn test_get_card_at_nonempty() {
+    let filled = Playfield {
+        freecells: [FreeCell::Free, FreeCell::Flipped, FreeCell::InUse(Card::Dragon(Suit::Blue))],
+        flower: Some(Card::Flower),
+        piles: [None, Some(Card::Number(Suit::Green, 1)), None],
+        tableau: [
+            vec![],
+            vec![Card::Dragon(Suit::Red)],
+            vec![Card::Number(Suit::Red, 3), Card::Number(Suit::Green, 2)],
+            vec![],
+            vec![],
+            vec![],
+            vec![],
+            vec![],
+        ]
+    };
+    let empty = Playfield {
+        freecells: [FreeCell::Free, FreeCell::Free, FreeCell::Free],
+        flower: None,
+        piles: [None, None, None],
+        tableau: [vec![], vec![], vec![], vec![], vec![], vec![], vec![], vec![]]
+    };
+    // Free cells
+    assert_eq!(get_card_at(&filled, Position::FreeCell(0)), None);
+    assert_eq!(get_card_at(&filled, Position::FreeCell(1)), None);
+    assert_eq!(get_card_at(&filled, Position::FreeCell(2)), Some(Card::Dragon(Suit::Blue)));
+    // Flower
+    assert_eq!(get_card_at(&filled, Position::FreeCell(2)), Some(Card::Dragon(Suit::Blue)));
+    assert_eq!(get_card_at(&empty, Position::Flower), None);
+    // Piles
+    assert_eq!(get_card_at(&filled, Position::Pile(0)), None);
+    assert_eq!(get_card_at(&filled, Position::Pile(1)), Some(Card::Number(Suit::Green, 1)));
+    // Tableau
+    assert_eq!(get_card_at(&filled, Position::Tableau(0)), None);
+    assert_eq!(get_card_at(&filled, Position::Tableau(1)), Some(Card::Dragon(Suit::Red)));
+    assert_eq!(get_card_at(&filled, Position::Tableau(2)), Some(Card::Number(Suit::Green, 2)));
 }
