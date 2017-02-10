@@ -1,0 +1,6 @@
+[package]
+name = "shenzen-solitaire"
+version = "0.1.0"
+authors = ["Tuomas Tynkkynen <tuomas@tuxera.com>"]
+
+[dependencies]
