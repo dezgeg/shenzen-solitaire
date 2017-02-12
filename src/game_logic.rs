@@ -2,6 +2,8 @@ extern crate rand;
 
 use self::rand::Rng;
 
+// The most basic building blocks - suits & cards:
+
 #[derive(Debug, PartialEq, Eq, Copy, Clone)]
 pub enum Suit {
     Red,
@@ -16,26 +18,35 @@ pub enum Card {
     Flower,
 }
 
+pub fn make_deck() -> Vec<Card> {
+    let mut ret = Vec::<Card>::new();
+    ret.push(Card::Flower);
+    for suit in vec![Suit::Red, Suit::Green, Suit::Black] {
+        for number in 1..(9 + 1) {
+            ret.push(Card::Number(suit, number));
+        }
+        for i in 0..4 {
+            ret.push(Card::Dragon(suit));
+        }
+    }
+
+    ret
+}
+
+pub fn make_shuffled_deck() -> Vec<Card> {
+    let mut ret = make_deck();
+    rand::thread_rng().shuffle(ret.as_mut_slice());
+    ret
+}
+
+// Then the playfield, where the cards are (duh!):
+
 #[derive(Debug, PartialEq, Eq, Copy, Clone)]
 pub enum FreeCell {
     Free,
     InUse(Card),
-    // When dragon is placed
+    // When four dragons are removed from the game and placed onto a free cell
     Flipped,
-}
-
-#[derive(Debug, PartialEq, Eq, Copy, Clone)]
-pub enum Position {
-    FreeCell(u32),
-    Flower,
-    Pile(u32),
-    Tableau(u32),
-}
-
-#[derive(Debug, PartialEq, Eq, Copy, Clone)]
-pub enum Move {
-    FlipDragon(Suit),
-    MoveCards(u32, Position, Position),
 }
 
 #[derive(Debug, PartialEq, Eq)]
@@ -49,6 +60,23 @@ pub struct Playfield {
     pub tableau: [Vec<Card>; 8],
 }
 
+pub fn make_shuffled_playfield() -> Playfield {
+    let mut deck = make_shuffled_deck();
+    let mut ret = Playfield {
+        freecells: [FreeCell::Free, FreeCell::Free, FreeCell::Free],
+        flower: None,
+        piles: [None, None, None],
+        tableau: [vec![], vec![], vec![], vec![], vec![], vec![], vec![], vec![]]
+    };
+
+    for col in 0..8 {
+        for row in 0..5 {
+            ret.tableau[col].push(deck[8 * row + col]);
+        }
+    }
+    ret
+}
+
 pub fn get_card_at(playfield: &Playfield, pos: Position) -> Option<Card> {
     match pos {
         Position::FreeCell(i) => match playfield.freecells[i as usize] {
@@ -59,6 +87,22 @@ pub fn get_card_at(playfield: &Playfield, pos: Position) -> Option<Card> {
         Position::Pile(i) => playfield.piles[i as usize],
         Position::Tableau(i) => playfield.tableau[i as usize].last().map(|x| *x),
     }
+}
+
+// And finally, rules & logic of the game:
+
+#[derive(Debug, PartialEq, Eq, Copy, Clone)]
+pub enum Position {
+    FreeCell(u32),
+    Flower,
+    Pile(u32),
+    Tableau(u32),
+}
+
+#[derive(Debug, PartialEq, Eq, Copy, Clone)]
+pub enum Move {
+    FlipDragon(Suit),
+    MoveCards(u32, Position, Position),
 }
 
 pub fn is_legal_move(playfield: &Playfield, m: Move) -> bool {
@@ -93,42 +137,3 @@ pub fn is_legal_move(playfield: &Playfield, m: Move) -> bool {
         }
     }
 }
-
-pub fn make_deck() -> Vec<Card> {
-    let mut ret = Vec::<Card>::new();
-    ret.push(Card::Flower);
-    for suit in vec![Suit::Red, Suit::Green, Suit::Black] {
-        for number in 1..(9 + 1) {
-            ret.push(Card::Number(suit, number));
-        }
-        for i in 0..4 {
-            ret.push(Card::Dragon(suit));
-        }
-    }
-
-    ret
-}
-
-pub fn make_shuffled_deck() -> Vec<Card> {
-    let mut ret = make_deck();
-    rand::thread_rng().shuffle(ret.as_mut_slice());
-    ret
-}
-
-pub fn make_shuffled_playfield() -> Playfield {
-    let mut deck = make_shuffled_deck();
-    let mut ret = Playfield {
-        freecells: [FreeCell::Free, FreeCell::Free, FreeCell::Free],
-        flower: None,
-        piles: [None, None, None],
-        tableau: [vec![], vec![], vec![], vec![], vec![], vec![], vec![], vec![]]
-    };
-
-    for col in 0..8 {
-        for row in 0..5 {
-            ret.tableau[col].push(deck[8 * row + col]);
-        }
-    }
-    ret
-}
-
