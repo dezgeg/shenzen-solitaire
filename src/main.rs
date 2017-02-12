@@ -1,6 +1,8 @@
 extern crate rand;
+extern crate ansi_term;
 
 use rand::Rng;
+use ansi_term::{Colour, Style};
 
 #[derive(Debug, PartialEq, Eq, Copy, Clone)]
 enum Suit {
@@ -124,16 +126,51 @@ fn make_shuffled_playfield() -> Playfield {
         tableau: [vec![], vec![], vec![], vec![], vec![], vec![], vec![], vec![]]
     };
 
-    for row in 0..5 {
-        for col in 0..8 {
+    for col in 0..8 {
+        for row in 0..5 {
             ret.tableau[col].push(deck[8 * row + col]);
         }
     }
     ret
 }
 
+fn print_card(card: &Card) {
+    match *card {
+        Card::Dragon(_) => print!("│  !!!!  │ "),
+        Card::Flower => print!("│  ~~~~  │ "),
+        Card::Number(s, n) => print!("│ {}    {} │ ", n, n, ),
+    }
+}
+
+fn print_playfield(playfield: &Playfield) {
+    for row in 0..5 {
+        for col in 0..8 {
+            print!("╭────────╮ ");
+        }
+        println!();
+        for col in 0..8 {
+            if let Some(card) = playfield.tableau[col].get(row) {
+                print_card(card);
+            } else {
+                print!("     ");
+            }
+        }
+        println!();
+    }
+    for n in 0..5 {
+        for col in 0..8 {
+            print!("│        │ ");
+        }
+        println!();
+    }
+    for col in 0..8 {
+        print!("╰────────╯ ");
+    }
+    println!();
+}
+
 fn main() {
-    println!("shuffled deck: {:?}", make_shuffled_playfield());
+    print_playfield(&make_shuffled_playfield());
 }
 
 #[test]
