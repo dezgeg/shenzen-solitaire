@@ -61,11 +61,35 @@ fn get_card_at(playfield: &Playfield, pos: Position) -> Option<Card> {
     }
 }
 
-fn is_legal_move(playfield: Playfield, m: Move) -> bool {
+fn is_legal_move(playfield: &Playfield, m: Move) -> bool {
     match m {
         Move::FlipDragon(_) => unreachable!(),
         Move::MoveCards(count, from, to) => {
-            unreachable!();
+            // Evaluate source card, or bail out if no source card or not allowed to move from source
+            let src_card = match from {
+                Position::Flower | Position::Pile(_) => return false,
+                x => if let Some(card) = get_card_at(playfield, x) { card } else { return false; },
+            };
+            match to {
+                Position::FreeCell(i) => playfield.freecells[i as usize] == FreeCell::Free,
+                Position::Flower => src_card == Card::Flower,
+                Position::Tableau(_) => {
+                    match (src_card, get_card_at(playfield, to)) {
+                        (Card::Number(src_suit, src_number), Some(Card::Number(dst_suit, dst_number))) =>
+                            return src_number == dst_number - 1 && src_suit != dst_suit,
+                        (_, None) => return true,
+                        _ => return false,
+                    }
+                }
+                Position::Pile(_) => {
+                    match (src_card, get_card_at(playfield, to)) {
+                        (Card::Number(src_suit, src_number), Some(Card::Number(dst_suit, dst_number))) =>
+                            return src_suit == dst_suit && src_number == dst_number + 1,
+                        (Card::Number(_, 1), None) => return true,
+                        _ => return false,
+                    }
+                }
+            }
         }
     }
 }
