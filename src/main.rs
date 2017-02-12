@@ -2,7 +2,7 @@ extern crate rand;
 extern crate ansi_term;
 
 use rand::Rng;
-use ansi_term::{Colour, Style};
+use ansi_term::{ANSIString, Colour, Style};
 
 #[derive(Debug, PartialEq, Eq, Copy, Clone)]
 enum Suit {
@@ -134,11 +134,28 @@ fn make_shuffled_playfield() -> Playfield {
     ret
 }
 
+fn style_of_suit(suit: Suit) -> Style {
+    match suit {
+        Suit::Red => Style::new().fg(Colour::Red),
+        Suit::Green => Style::new().fg(Colour::Green),
+        Suit::Black => Style::new().fg(Colour::White),
+    }
+}
+
+fn ansi_of_dragon(suit: Suit) -> String {
+    let c = match suit {
+        Suit::Red => "%",
+        Suit::Green => "&",
+        Suit::Black => "=",
+    };
+    style_of_suit(suit).paint(c).to_string()
+}
+
 fn print_card(card: &Card) {
     match *card {
-        Card::Dragon(_) => print!("│  !!!!  │ "),
+        Card::Dragon(s) => print!("│ {}      │ ", ansi_of_dragon(s)),
         Card::Flower => print!("│  ~~~~  │ "),
-        Card::Number(s, n) => print!("│ {}    {} │ ", n, n, ),
+        Card::Number(s, n) => print!("│ {}      │ ", style_of_suit(s).paint(n.to_string()), ),
     }
 }
 
