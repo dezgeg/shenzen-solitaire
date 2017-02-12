@@ -115,9 +115,25 @@ fn make_shuffled_deck() -> Vec<Card> {
     ret
 }
 
+fn make_shuffled_playfield() -> Playfield {
+    let mut deck = make_shuffled_deck();
+    let mut ret = Playfield {
+        freecells: [FreeCell::Free, FreeCell::Free, FreeCell::Free],
+        flower: None,
+        piles: [None, None, None],
+        tableau: [vec![], vec![], vec![], vec![], vec![], vec![], vec![], vec![]]
+    };
+
+    for row in 0..5 {
+        for col in 0..8 {
+            ret.tableau[col].push(deck[8 * row + col]);
+        }
+    }
+    ret
+}
+
 fn main() {
-    println!("deck: {:?}", make_deck());
-    println!("shuffled deck: {:?}", make_shuffled_deck());
+    println!("shuffled deck: {:?}", make_shuffled_playfield());
 }
 
 #[test]
