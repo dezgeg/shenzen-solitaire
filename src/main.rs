@@ -6,7 +6,7 @@ use rand::Rng;
 enum Suit {
     Red,
     Green,
-    Blue,
+    Black,
 }
 
 #[derive(Debug, PartialEq, Eq, Copy, Clone)]
@@ -97,7 +97,7 @@ fn is_legal_move(playfield: &Playfield, m: Move) -> bool {
 fn make_deck() -> Vec<Card> {
     let mut ret = Vec::<Card>::new();
     ret.push(Card::Flower);
-    for suit in vec![Suit::Red, Suit::Green, Suit::Blue] {
+    for suit in vec![Suit::Red, Suit::Green, Suit::Black] {
         for number in 1..(9 + 1) {
             ret.push(Card::Number(suit, number));
         }
@@ -127,7 +127,7 @@ fn test_make_deck() {
 
 fn make_test_playfield() -> Playfield {
     Playfield {
-        freecells: [FreeCell::Free, FreeCell::Flipped, FreeCell::InUse(Card::Dragon(Suit::Blue))],
+        freecells: [FreeCell::Free, FreeCell::Flipped, FreeCell::InUse(Card::Dragon(Suit::Black))],
         flower: Some(Card::Flower),
         piles: [None, Some(Card::Number(Suit::Green, 1)), None],
         tableau: [
@@ -135,8 +135,8 @@ fn make_test_playfield() -> Playfield {
             /* 1 */ vec![Card::Dragon(Suit::Red)],
             /* 2 */ vec![Card::Number(Suit::Red, 4), Card::Number(Suit::Green, 3)],
             /* 3 */ vec![Card::Number(Suit::Green, 2)],
-            /* 4 */ vec![Card::Number(Suit::Blue, 2)],
-            /* 5 */ vec![Card::Number(Suit::Blue, 4)],
+            /* 4 */ vec![Card::Number(Suit::Black, 2)],
+            /* 5 */ vec![Card::Number(Suit::Black, 4)],
             /* 6 */ vec![],
             /* 7 */ vec![],
         ]
@@ -155,9 +155,9 @@ fn test_get_card_at() {
     // Free cells
     assert_eq!(get_card_at(&filled, Position::FreeCell(0)), None);
     assert_eq!(get_card_at(&filled, Position::FreeCell(1)), None);
-    assert_eq!(get_card_at(&filled, Position::FreeCell(2)), Some(Card::Dragon(Suit::Blue)));
+    assert_eq!(get_card_at(&filled, Position::FreeCell(2)), Some(Card::Dragon(Suit::Black)));
     // Flower
-    assert_eq!(get_card_at(&filled, Position::FreeCell(2)), Some(Card::Dragon(Suit::Blue)));
+    assert_eq!(get_card_at(&filled, Position::FreeCell(2)), Some(Card::Dragon(Suit::Black)));
     assert_eq!(get_card_at(&empty, Position::Flower), None);
     // Piles
     assert_eq!(get_card_at(&filled, Position::Pile(0)), None);
@@ -188,7 +188,7 @@ fn test_is_legal_move() {
     // Move to in-use freecell: false
     assert!(!is_legal_move(&playfield, Move::MoveCards(1, Position::Tableau(1), Position::FreeCell(2))));
 
-    // Moving topmost card (Green 3) to (Blue 4): Allowed
+    // Moving topmost card (Green 3) to (Black 4): Allowed
     assert!(is_legal_move(&playfield, Move::MoveCards(1, Position::Tableau(2), Position::Tableau(5))));
     // Moving (Green 2) on top of (Green 3): Not allowed
     assert!(!is_legal_move(&playfield, Move::MoveCards(1, Position::Tableau(3), Position::Tableau(2))));
