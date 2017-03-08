@@ -65,28 +65,16 @@ fn print_playfield(playfield: &Playfield) {
                 let is_filler = !is_head && (piece_index < column_height + 2 && !cards_in_column.is_empty());
                 let is_tail = piece_index == column_height + 2 && !cards_in_column.is_empty();
 
-                if line == 1 {
-                    if is_head {
-                        print!("╭────────╮ ");
-                    } else if is_filler {
-                        print!("│        │ ");
-                    } else if is_tail {
-                        let card = cards_in_column.get(piece_index - 3).unwrap();
-                        print_card(card, false);
-                    } else {
-                        print!("           ");
-                    }
-                } else {
-                    if is_head {
-                        let card = cards_in_column.get(piece_index).unwrap();
-                        print_card(card, true);
-                    } else if is_filler {
-                        print!("│        │ ");
-                    } else if is_tail {
-                        print!("╰────────╯ ");
-                    } else {
-                        print!("           ");
-                    }
+                match line {
+                    1 if is_head => print!("╭────────╮ "),
+                    2 if is_head => print_card(cards_in_column.get(piece_index).unwrap(), true),
+
+                    _ if is_filler => print!("│        │ "),
+
+                    1 if is_tail => print_card(cards_in_column.get(piece_index - 3).unwrap(), false),
+                    2 if is_tail => print!("╰────────╯ "),
+
+                    _ => print!("           "),
                 }
             }
             println!();
