@@ -13,7 +13,7 @@ pub enum Suit {
 
 #[derive(Debug, PartialEq, Eq, Copy, Clone)]
 pub enum Card {
-    Number(Suit, u32),
+    Number(Suit, usize),
     Dragon(Suit),
     Flower,
 }
@@ -99,13 +99,13 @@ pub fn make_shuffled_playfield() -> Playfield {
 
 pub fn get_card_at(playfield: &Playfield, pos: Position) -> Option<Card> {
     match pos {
-        Position::FreeCell(i) => match playfield.freecells[i as usize] {
+        Position::FreeCell(i) => match playfield.freecells[i] {
             FreeCell::InUse(card) => Some(card),
             _ => None,
         },
         Position::Flower => playfield.flower,
-        Position::Pile(i) => playfield.piles[i as usize],
-        Position::Tableau(i) => playfield.tableau[i as usize].last().map(|x| *x),
+        Position::Pile(i) => playfield.piles[i],
+        Position::Tableau(i) => playfield.tableau[i].last().map(|x| *x),
     }
 }
 
@@ -138,36 +138,36 @@ fn test_get_card_at() {
 
 #[derive(Debug, PartialEq, Eq, Copy, Clone)]
 pub enum Position {
-    FreeCell(u32),
+    FreeCell(usize),
     Flower,
-    Pile(u32),
-    Tableau(u32),
+    Pile(usize),
+    Tableau(usize),
 }
 
 #[derive(Debug, PartialEq, Eq, Copy, Clone)]
-pub struct Move(u32, Position, Position);
+pub struct Move(usize, Position, Position);
 
-pub fn pick_up_cards(playfield: Playfield, count: u32, from: Position) -> Option<(Playfield, Vec<Card>)> {
+pub fn pick_up_cards(playfield: Playfield, count: usize, from: Position) -> Option<(Playfield, Vec<Card>)> {
     let mut pf2 : Playfield = playfield;
     match from {
         Position::Flower | Position::Pile(_) => return None,
-        Position::FreeCell(i) => match pf2.freecells[i as usize] {
+        Position::FreeCell(i) => match pf2.freecells[i] {
             FreeCell::InUse(card) => {
                 if count != 1 {
                     return None;
                 }
-                *pf2.freecells.get_mut(i as usize).unwrap() = FreeCell::Free;
+                *pf2.freecells.get_mut(i).unwrap() = FreeCell::Free;
                 Some((pf2, vec![card]))
             }
             _ => None,
         },
         Position::Tableau(i) => {
             let picked_up_cards = {
-                let old_cards = pf2.tableau.get_mut(i as usize).unwrap();
-                if count as usize > old_cards.len() {
+                let old_cards = pf2.tableau.get_mut(i).unwrap();
+                if count > old_cards.len() {
                     return None;
                 }
-                old_cards.split_off(count as usize - 1)
+                old_cards.split_off(count - 1)
             };
             // XXX: check suits
             Some((pf2, picked_up_cards))
@@ -180,7 +180,7 @@ pub fn place_cards(playfield: Playfield, new_cards: Vec<Card>, to: Position) -> 
     let bottom_card = new_cards[0];
     if let Position::Tableau(ti) = to {
         let ok = {
-            let old_cards = &mut pf2.tableau[ti as usize];
+            let old_cards = &mut pf2.tableau[ti];
             let last = old_cards.last().cloned();
             old_cards.extend(new_cards);
             match (last, bottom_card) {
@@ -201,9 +201,9 @@ pub fn place_cards(playfield: Playfield, new_cards: Vec<Card>, to: Position) -> 
     }
 
     let ok = match (to, bottom_card) {
-        (Position::FreeCell(fi), _) => match pf2.freecells[fi as usize]{
+        (Position::FreeCell(fi), _) => match pf2.freecells[fi]{
             FreeCell::Free => {
-                pf2.freecells[fi as usize] = FreeCell::InUse(bottom_card);
+                pf2.freecells[fi] = FreeCell::InUse(bottom_card);
                 true
             }
             _ => false,
@@ -213,7 +213,7 @@ pub fn place_cards(playfield: Playfield, new_cards: Vec<Card>, to: Position) -> 
             true
         },
         (Position::Pile(pi), Card::Number(src_suit, src_number)) => {
-            let pile = &mut pf2.piles[pi as usize];
+            let pile = &mut pf2.piles[pi];
             let last = *pile;
             *pile = Some(bottom_card);
             match last {

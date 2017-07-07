@@ -53,7 +53,7 @@ fn print_card(card: &Card, is_head: bool) {
 // So for a stack of n cards, we always draw n + 3 pieces.
 // Exception: empty stacks are not drawn.
 
-fn print_playfield(playfield: &Playfield) {
+fn print_tableau(playfield: &Playfield) {
     let max_col_height = playfield.tableau.iter().map(|cs| cs.len()).max().unwrap();
     for piece_index in 0..(max_col_height + 3) {
         for line in 1..3 {
@@ -82,6 +82,20 @@ fn print_playfield(playfield: &Playfield) {
     }
 }
 
+fn print_top(playfield: &Playfield) {
+    for piece_index in 0..4 {
+        for line in 1..3 {
+            // Draw freecell pieces
+            for fc in 0..4 {
+
+            }
+            // Draw some empty space
+
+            // Draw the piles
+        }
+    }
+}
+
 fn main() {
     let render_test = Playfield {
         freecells: [FreeCell::Free, FreeCell::Flipped, FreeCell::InUse(Card::Dragon(Suit::Black))],
@@ -99,6 +113,7 @@ fn main() {
         ]
     };
     //print_playfield(&make_shuffled_playfield());
-    print_playfield(&render_test);
+    print_top(&render_test);
+    print_tableau(&render_test);
 }
 
