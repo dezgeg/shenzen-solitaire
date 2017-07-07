@@ -66,6 +66,7 @@ pub struct Playfield {
 }
 
 impl Clone for Playfield {
+    // Stupid boilerplate function
     fn clone(&self) -> Playfield {
         let mut tmp = [vec![], vec![], vec![], vec![], vec![], vec![], vec![], vec![]];
         for i in 0..tmp.len() {
@@ -95,43 +96,6 @@ pub fn make_shuffled_playfield() -> Playfield {
         }
     }
     ret
-}
-
-pub fn get_card_at(playfield: &Playfield, pos: Position) -> Option<Card> {
-    match pos {
-        Position::FreeCell(i) => match playfield.freecells[i] {
-            FreeCell::InUse(card) => Some(card),
-            _ => None,
-        },
-        Position::Flower => playfield.flower,
-        Position::Pile(i) => playfield.piles[i],
-        Position::Tableau(i) => playfield.tableau[i].last().map(|x| *x),
-    }
-}
-
-#[test]
-fn test_get_card_at() {
-    let filled = make_test_playfield();
-    let empty = Playfield {
-        freecells: [FreeCell::Free, FreeCell::Free, FreeCell::Free],
-        flower: None,
-        piles: [None, None, None],
-        tableau: [vec![], vec![], vec![], vec![], vec![], vec![], vec![], vec![]]
-    };
-    // Free cells
-    assert_eq!(get_card_at(&filled, Position::FreeCell(0)), None);
-    assert_eq!(get_card_at(&filled, Position::FreeCell(1)), None);
-    assert_eq!(get_card_at(&filled, Position::FreeCell(2)), Some(Card::Dragon(Suit::Black)));
-    // Flower
-    assert_eq!(get_card_at(&filled, Position::FreeCell(2)), Some(Card::Dragon(Suit::Black)));
-    assert_eq!(get_card_at(&empty, Position::Flower), None);
-    // Piles
-    assert_eq!(get_card_at(&filled, Position::Pile(0)), None);
-    assert_eq!(get_card_at(&filled, Position::Pile(1)), Some(Card::Number(Suit::Green, 1)));
-    // Tableau
-    assert_eq!(get_card_at(&filled, Position::Tableau(0)), None);
-    assert_eq!(get_card_at(&filled, Position::Tableau(1)), Some(Card::Dragon(Suit::Red)));
-    assert_eq!(get_card_at(&filled, Position::Tableau(2)), Some(Card::Number(Suit::Green, 3)));
 }
 
 // And finally, rules & logic of the game:
