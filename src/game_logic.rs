@@ -115,25 +115,33 @@ pub fn pick_up_cards(playfield: Playfield, count: usize, from: Position) -> Opti
     let mut pf2 : Playfield = playfield;
     match from {
         Position::Flower | Position::Pile(_) => return None,
-        Position::FreeCell(i) => match pf2.freecells[i] {
+        Position::FreeCell(fi) => match pf2.freecells[fi] {
             FreeCell::InUse(card) => {
                 if count != 1 {
                     return None;
                 }
-                *pf2.freecells.get_mut(i).unwrap() = FreeCell::Free;
+                pf2.freecells[fi] = FreeCell::Free;
                 Some((pf2, vec![card]))
             }
             _ => None,
         },
-        Position::Tableau(i) => {
+        Position::Tableau(ti) => {
             let picked_up_cards = {
-                let old_cards = pf2.tableau.get_mut(i).unwrap();
+                let old_cards = &mut pf2.tableau[ti];
                 if count > old_cards.len() {
                     return None;
                 }
-                old_cards.split_off(count - 1)
+                let idx = old_cards.len() - count;
+                old_cards.split_off(idx)
             };
-            // XXX: check suits
+            let mut prev_card = picked_up_cards[0];
+            for i in 1..picked_up_cards.len() {
+                match (picked_up_cards[i], prev_card) {
+                    (Card::Number(suit1, number1), Card::Number(suit2, number2)) if
+                        suit1 != suit2 && number2 == number1 + 1 => prev_card = picked_up_cards[i],
+                    _ => return None,
+                }
+            }
             Some((pf2, picked_up_cards))
         }
     }
@@ -149,7 +157,9 @@ pub fn place_cards(playfield: Playfield, new_cards: Vec<Card>, to: Position) -> 
             old_cards.extend(new_cards);
             match (last, bottom_card) {
                 (None, _) => true,
-                (Some(Card::Number(dst_suit, _)), Card::Number(src_suit, _)) => src_suit != dst_suit, // XXX: check number
+                (Some(Card::Number(dst_suit, dst_number)), Card::Number(src_suit, src_number)) => {
+                    dst_number == src_number + 1 && src_suit != dst_suit
+                }
                 _ => false,
             }
         };
@@ -215,7 +225,7 @@ fn make_test_playfield() -> Playfield {
             /* 3 */ vec![Card::Number(Suit::Green, 2)],
             /* 4 */ vec![Card::Number(Suit::Black, 2)],
             /* 5 */ vec![Card::Number(Suit::Black, 4)],
-            /* 6 */ vec![],
+            /* 6 */ vec![Card::Number(Suit::Black, 6), Card::Number(Suit::Black, 5)],
             /* 7 */ vec![],
         ]
     }
@@ -232,6 +242,8 @@ fn test_is_legal_move() {
     assert!(!is_legal_move(&playfield, Move(1, Position::Pile(1), Position::FreeCell(0))));
     // Moving from a flipped freecell: not allowed
     assert!(!is_legal_move(&playfield, Move(1, Position::FreeCell(1), Position::FreeCell(0))));
+    // Moving two of the same color: not allowed
+    assert!(!is_legal_move(&playfield, Move(2, Position::Tableau(6), Position::Tableau(7))));
 
     /********** Destination checks *********/
     // Move to empty freecell: true
@@ -241,10 +253,10 @@ fn test_is_legal_move() {
     // Move to in-use freecell: false
     assert!(!is_legal_move(&playfield, Move(1, Position::Tableau(1), Position::FreeCell(2))));
 
-    // Moving topmost card (Green 3) to (Black 4): Allowed
-    assert!(is_legal_move(&playfield, Move(1, Position::Tableau(2), Position::Tableau(5))));
     // Moving (Green 2) on top of (Green 3): Not allowed
     assert!(!is_legal_move(&playfield, Move(1, Position::Tableau(3), Position::Tableau(2))));
     // Moving (Black 2) on top of (Green 3): Allowed
     assert!(is_legal_move(&playfield, Move(1, Position::Tableau(4), Position::Tableau(2))));
+    // Moving two cards (Red 4, Green 3) to (Black 5): Allowed
+    assert!(is_legal_move(&playfield, Move(2, Position::Tableau(2), Position::Tableau(6))));
 }
