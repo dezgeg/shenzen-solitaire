@@ -114,6 +114,19 @@ pub enum Position {
 #[derive(Debug, PartialEq, Eq, Copy, Clone)]
 pub struct Move(usize, Position, Position);
 
+// Returns whether @card1 can be placed on top of @card2 on the tableau.
+// That is:
+//  - both must be numeric
+//  - suits must be different
+//  - @card1's value must be one lower than @card2's
+pub fn can_place_on_top(card1: Card, card2: Card) -> bool {
+    match (card1, card2) {
+        (Card::Number(suit1, number1), Card::Number(suit2, number2)) =>
+            suit1 != suit2 && number2 == number1 + 1,
+        _ => false
+    }
+}
+
 // Pick up @count cards from the @playfield position @from.
 // If this half-move is not permitted by the game rules, None is returned.
 // Otherwise, a pair of the following form is returned:
@@ -149,10 +162,10 @@ pub fn pick_up_cards(playfield: Playfield, count: usize, from: Position) -> Opti
             };
             let mut prev_card = picked_up_cards[0];
             for i in 1..picked_up_cards.len() {
-                match (picked_up_cards[i], prev_card) {
-                    (Card::Number(suit1, number1), Card::Number(suit2, number2)) if
-                        suit1 != suit2 && number2 == number1 + 1 => prev_card = picked_up_cards[i],
-                    _ => return None,
+                if can_place_on_top(picked_up_cards[i], prev_card) {
+                    prev_card = picked_up_cards[i];
+                } else {
+                    return None
                 }
             }
             Some((pf2, picked_up_cards))
