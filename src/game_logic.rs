@@ -81,6 +81,8 @@ impl Clone for Playfield {
     }
 }
 
+// Creates a shuffled, initial state of the game.
+// That is, all the 40 cards are evenly shuffled into the 8 tableau columns and the rest is empty.
 pub fn make_shuffled_playfield() -> Playfield {
     let mut deck = make_shuffled_deck();
     let mut ret = Playfield {
@@ -183,13 +185,13 @@ pub fn pick_up_cards(playfield: Playfield, count: usize, from: Position) -> Opti
 // Note: This function assumes that @new_cards only comes from the return value of pick_up_cards(),
 // otherwise non-rule-conforming behaviour may occur.
 pub fn place_cards(playfield: Playfield, new_cards: Vec<Card>, to: Position) -> Option<Playfield> {
-    let mut pf2: Playfield = playfield;
+    let mut new_pf: Playfield = playfield;
     let bottom_card = new_cards[0];
 
     // Tableau positions can accept multiple cards, so special-case that first.
     if let Position::Tableau(ti) = to {
         let ok = {
-            let old_cards = &mut pf2.tableau[ti];
+            let old_cards = &mut new_pf.tableau[ti];
             let last = old_cards.last().cloned();
             old_cards.extend(new_cards);
             match (last, bottom_card) {
@@ -204,7 +206,7 @@ pub fn place_cards(playfield: Playfield, new_cards: Vec<Card>, to: Position) -> 
             }
         };
         if ok {
-            return Some(pf2)
+            return Some(new_pf)
         } else {
             return None
         }
@@ -217,21 +219,21 @@ pub fn place_cards(playfield: Playfield, new_cards: Vec<Card>, to: Position) -> 
 
     let ok = match (to, bottom_card) {
         // A free freecell accepts any card, other kinds of freecells don't obviously accept anything.
-        (Position::FreeCell(fi), _) => match pf2.freecells[fi] {
+        (Position::FreeCell(fi), _) => match new_pf.freecells[fi] {
             FreeCell::Free => {
-                pf2.freecells[fi] = FreeCell::InUse(bottom_card);
+                new_pf.freecells[fi] = FreeCell::InUse(bottom_card);
                 true
             }
             _ => false,
         },
         // The flower spot only accepts a flower.
         (Position::Flower, Card::Flower) => {
-            pf2.flower = Some(bottom_card);
+            new_pf.flower = Some(bottom_card);
             true
         }
         // A pile spot accepts a card of the same suit and a one higher value
         (Position::Pile(pi), Card::Number(src_suit, src_number)) => {
-            let pile = &mut pf2.piles[pi];
+            let pile = &mut new_pf.piles[pi];
             let last = *pile;
             *pile = Some(bottom_card);
             match last {
@@ -241,7 +243,7 @@ pub fn place_cards(playfield: Playfield, new_cards: Vec<Card>, to: Position) -> 
         }
         _ => false,
     };
-    if ok { Some(pf2) } else { None }
+    if ok { Some(new_pf) } else { None }
 }
 
 pub fn is_legal_move(playfield: &Playfield, m: Move) -> bool {
