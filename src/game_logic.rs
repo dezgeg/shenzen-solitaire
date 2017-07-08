@@ -100,17 +100,24 @@ pub fn make_shuffled_playfield() -> Playfield {
 
 // And finally, rules & logic of the game:
 
+// Available positions on the playfield where cards can be played.
+// For the 'usize' indexes, only certain values are legal
 #[derive(Debug, PartialEq, Eq, Copy, Clone)]
 pub enum Position {
-    FreeCell(usize),
+    FreeCell(usize), // 0 .. 2
     Flower,
-    Pile(usize),
-    Tableau(usize),
+    Pile(usize), // 0 .. 2
+    Tableau(usize), // 0 .. 7
 }
 
 #[derive(Debug, PartialEq, Eq, Copy, Clone)]
 pub struct Move(usize, Position, Position);
 
+// Pick up @count cards from the @playfield position @from.
+// If this half-move is not permitted by the game rules, None is returned.
+// Otherwise, a pair of the following form is returned:
+//   - 1st element is the new Playfield object with the lifted card removed
+//   - 2nd element is a vector of the picked up cards
 pub fn pick_up_cards(playfield: Playfield, count: usize, from: Position) -> Option<(Playfield, Vec<Card>)> {
     let mut pf2 : Playfield = playfield;
     match from {
@@ -147,6 +154,12 @@ pub fn pick_up_cards(playfield: Playfield, count: usize, from: Position) -> Opti
     }
 }
 
+// Places the cards in @new_cards onto the position @to on the @playfield.
+// If this half-move is not permitted by the game rules, None is returned.
+// Otherwise, a new Playfield object with the cards placed appropriately is returned.
+//
+// Note: This function assumes that @new_cards only comes from the return value of pick_up_cards(),
+// otherwise non-rule-conforming behaviour may occur.
 pub fn place_cards(playfield: Playfield, new_cards: Vec<Card>, to: Position) -> Option<Playfield> {
     let mut pf2 : Playfield = playfield;
     let bottom_card = new_cards[0];
