@@ -101,15 +101,16 @@ pub fn make_shuffled_playfield() -> Playfield {
 // And finally, rules & logic of the game:
 
 // Available positions on the playfield where cards can be played.
-// For the 'usize' indexes, only certain values are legal
+// For the 'usize' indexes, only certain values are legal.
 #[derive(Debug, PartialEq, Eq, Copy, Clone)]
 pub enum Position {
-    FreeCell(usize), // 0 .. 2
+    FreeCell(usize), // 0 .. 2 inclusive.
     Flower,
-    Pile(usize), // 0 .. 2
-    Tableau(usize), // 0 .. 7
+    Pile(usize), // 0 .. 2 inclusive.
+    Tableau(usize), // 0 .. 7 inclusive.
 }
 
+// A move simply moves a number of cards from a position to another position.
 #[derive(Debug, PartialEq, Eq, Copy, Clone)]
 pub struct Move(usize, Position, Position);
 
@@ -118,20 +119,25 @@ pub struct Move(usize, Position, Position);
 // Otherwise, a pair of the following form is returned:
 //   - 1st element is the new Playfield object with the lifted card removed
 //   - 2nd element is a vector of the picked up cards
+//
+// Attempting to pick up more cards than a position contains returns None.
 pub fn pick_up_cards(playfield: Playfield, count: usize, from: Position) -> Option<(Playfield, Vec<Card>)> {
+    assert!(count > 0);
     let mut pf2 : Playfield = playfield;
     match from {
+        // Cards can't ever be picked up from discard piles or from the flower spot.
         Position::Flower | Position::Pile(_) => return None,
-        Position::FreeCell(fi) => match pf2.freecells[fi] {
-            FreeCell::InUse(card) => {
-                if count != 1 {
-                    return None;
-                }
+        // Freecells can only have a single card each; additionally flipped-over dragons in free cells
+        // can't be messed with.
+        Position::FreeCell(fi) => match (pf2.freecells[fi], count) {
+            (FreeCell::InUse(old_card), 1) => {
                 pf2.freecells[fi] = FreeCell::Free;
-                Some((pf2, vec![card]))
+                Some((pf2, vec![old_card]))
             }
             _ => None,
         },
+        // For a tableau position, the usual can-place-on-top-of rules apply
+        // (Card must be numeric, suit must be different and value strictly decreasing by one.)
         Position::Tableau(ti) => {
             let picked_up_cards = {
                 let old_cards = &mut pf2.tableau[ti];
@@ -169,7 +175,10 @@ pub fn place_cards(playfield: Playfield, new_cards: Vec<Card>, to: Position) -> 
             let last = old_cards.last().cloned();
             old_cards.extend(new_cards);
             match (last, bottom_card) {
+                // Anything can be moved into empty tableau slots
                 (None, _) => true,
+                // Otherwise, we just consider if the bottom-most card of @new_cards can be placed
+                // on the top card of the tableau pile.
                 (Some(Card::Number(dst_suit, dst_number)), Card::Number(src_suit, src_number)) => {
                     dst_number == src_number + 1 && src_suit != dst_suit
                 }
@@ -183,11 +192,13 @@ pub fn place_cards(playfield: Playfield, new_cards: Vec<Card>, to: Position) -> 
         }
     }
 
+    // All the other positions on the board can house only one card at a time.
     if new_cards.len() != 1 {
         return None;
     }
 
     let ok = match (to, bottom_card) {
+        // A free freecell accepts any card, other kinds of freecells don't obviously accept anything.
         (Position::FreeCell(fi), _) => match pf2.freecells[fi]{
             FreeCell::Free => {
                 pf2.freecells[fi] = FreeCell::InUse(bottom_card);
@@ -195,10 +206,12 @@ pub fn place_cards(playfield: Playfield, new_cards: Vec<Card>, to: Position) -> 
             }
             _ => false,
         },
+        // The flower spot only accepts a flower.
         (Position::Flower, Card::Flower) => {
             pf2.flower = Some(bottom_card);
             true
         },
+        // A pile spot accepts a card of the same suit and a one higher value
         (Position::Pile(pi), Card::Number(src_suit, src_number)) => {
             let pile = &mut pf2.piles[pi];
             let last = *pile;
