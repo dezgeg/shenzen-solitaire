@@ -90,6 +90,24 @@ impl Playfield {
             tableau: [vec![], vec![], vec![], vec![], vec![], vec![], vec![], vec![]]
         }
     }
+
+    fn with_freecell_cards(&self, cards: Vec<Card>, rest: FreeCell) -> Playfield {
+        let mut pf = self.clone();
+        for i in 0..pf.freecells.len() {
+            if i < cards.len() {
+                pf.freecells[i] = FreeCell::InUse(cards[i]);
+            } else {
+                pf.freecells[i] = rest;
+            }
+        }
+        pf
+    }
+
+    fn with_tableau_column(&self, column: usize, cards: Vec<Card>) -> Playfield {
+        let mut pf = self.clone();
+        pf.tableau[column] = cards;
+        pf
+    }
 }
 
 // Creates a shuffled, initial state of the game.
@@ -350,41 +368,20 @@ fn test_is_legal_move() {
 #[test]
 fn test_flip_dragons_on_top_of_each_other() {
     // Can't flip since two dragons are on top of each other
-    let pf = Playfield {
-        freecells: [FreeCell::Free, FreeCell::Free, FreeCell::InUse(Card::Dragon(Suit::Black))],
-        flower: None,
-        piles: [None, None, None],
-        tableau: [
-            /* 0 */ vec![Card::Dragon(Suit::Black), Card::Dragon(Suit::Black)],
-            /* 1 */ vec![],
-            /* 2 */ vec![Card::Number(Suit::Red, 4), Card::Dragon(Suit::Black)],
-            /* 3 */ vec![],
-            /* 4 */ vec![],
-            /* 5 */ vec![],
-            /* 6 */ vec![],
-            /* 7 */ vec![],
-        ]
-    };
+    let pf = Playfield::empty()
+        .with_tableau_column(0, vec![Card::Dragon(Suit::Black), Card::Dragon(Suit::Black)])
+        .with_tableau_column(1, vec![Card::Dragon(Suit::Black)])
+        .with_tableau_column(2, vec![Card::Dragon(Suit::Black)]);
     assert!(flip_dragon(pf, Suit::Black) == None);
 }
 
 #[test]
 fn test_flip_dragons_no_space() {
     // No room in free cells, can't flip
-    let pf = Playfield {
-        freecells: [FreeCell::InUse(Card::Dragon(Suit::Red)), FreeCell::Flipped, FreeCell::InUse(Card::Dragon(Suit::Red))],
-        flower: None,
-        piles: [None, None, None],
-        tableau: [
-            /* 0 */ vec![Card::Dragon(Suit::Black)],
-            /* 1 */ vec![Card::Dragon(Suit::Black)],
-            /* 2 */ vec![Card::Number(Suit::Red, 4), Card::Dragon(Suit::Black)],
-            /* 3 */ vec![Card::Dragon(Suit::Black)],
-            /* 4 */ vec![],
-            /* 5 */ vec![],
-            /* 6 */ vec![],
-            /* 7 */ vec![],
-        ]
-    };
+    let pf = Playfield::empty().with_freecell_cards(vec![], FreeCell::Flipped)
+        .with_tableau_column(0, vec![Card::Dragon(Suit::Black)])
+        .with_tableau_column(1, vec![Card::Dragon(Suit::Black)])
+        .with_tableau_column(2, vec![Card::Dragon(Suit::Black)])
+        .with_tableau_column(3, vec![Card::Dragon(Suit::Black)]);
     assert!(flip_dragon(pf, Suit::Black) == None);
 }
