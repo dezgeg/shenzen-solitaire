@@ -22,19 +22,19 @@ fn ansi_of_dragon(suit: Suit) -> String {
     style_of_suit(suit).paint(c).to_string()
 }
 
-fn print_card(card: &Card, is_head: bool) {
+fn print_card(card: &Card, is_head: bool) -> String {
     if is_head {
         match *card {
-            Card::Dragon(s) => print!("│ {}      │ ", ansi_of_dragon(s)),
-            Card::Flower => print!("│  ~~~~  │ "),
-            Card::Number(s, n) => print!("│ {}      │ ", style_of_suit(s).paint(n.to_string()), ),
-        };
+            Card::Dragon(s) => format!("│ {}      │ ", ansi_of_dragon(s)),
+            Card::Flower => format!("│  ~~~~  │ "),
+            Card::Number(s, n) => format!("│ {}      │ ", style_of_suit(s).paint(n.to_string()), ),
+        }
     } else {
         match *card {
-            Card::Dragon(s) => print!("│      {} │ ", ansi_of_dragon(s)),
-            Card::Flower => print!("│  ~~~~  │ "),
-            Card::Number(s, n) => print!("│      {} │ ", style_of_suit(s).paint(n.to_string()), ),
-        };
+            Card::Dragon(s) => format!("│      {} │ ", ansi_of_dragon(s)),
+            Card::Flower => format!("│  ~~~~  │ "),
+            Card::Number(s, n) => format!("│      {} │ ", style_of_suit(s).paint(n.to_string()), ),
+        }
     }
 }
 
@@ -55,30 +55,39 @@ fn print_card(card: &Card, is_head: bool) {
 
 fn print_tableau(playfield: &Playfield) {
     let max_col_height = playfield.tableau.iter().map(|cs| cs.len()).max().unwrap();
-    for piece_index in 0..(max_col_height + 3) {
-        for line in 1..3 {
-            for col in 0..8 {
-                let cards_in_column = &playfield.tableau[col];
-                let column_height = cards_in_column.len();
+    let mut prints: Vec<Vec<String>> = vec![];
+    for col in 0..8 {
+        let cards_in_column = &playfield.tableau[col];
+        let column_height = cards_in_column.len();
 
-                let is_head = piece_index < column_height;
-                let is_filler = !is_head && (piece_index < column_height + 2 && !cards_in_column.is_empty());
-                let is_tail = piece_index == column_height + 2 && !cards_in_column.is_empty();
+        let mut column_lines: Vec<String> = vec![];
 
-                match line {
-                    1 if is_head => print!("╭────────╮ "),
-                    2 if is_head => print_card(cards_in_column.get(piece_index).unwrap(), true),
+        for piece_index in 0..(max_col_height + 3) {
+            let is_head = piece_index < column_height;
+            let is_filler = !is_head && (piece_index < column_height + 2 && !cards_in_column.is_empty());
+            let is_tail = piece_index == column_height + 2 && !cards_in_column.is_empty();
 
-                    _ if is_filler => print!("│        │ "),
-
-                    1 if is_tail => print_card(cards_in_column.get(piece_index - 3).unwrap(), false),
-                    2 if is_tail => print!("╰────────╯ "),
-
-                    _ => print!("           "),
-                }
+            if is_head {
+                column_lines.push("╭────────╮ ".to_string());
+                column_lines.push(print_card(cards_in_column.get(piece_index).unwrap(), true));
+            } else if is_filler {
+                column_lines.push("│        │ ".to_string());
+                column_lines.push("│        │ ".to_string());
+            } else if is_tail {
+                column_lines.push(print_card(cards_in_column.get(piece_index - 3).unwrap(), false));
+                column_lines.push("╰────────╯ ".to_string());
+            } else {
+                column_lines.push("           ".to_string());
+                column_lines.push("           ".to_string());
             }
-            println!();
         }
+        prints.push(column_lines);
+    }
+    for i in 0..prints[0].len() {
+        for j in 0..playfield.tableau.len() {
+            print!("{}", prints[j][i]);
+        }
+        println!();
     }
 }
 
