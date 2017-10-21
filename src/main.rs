@@ -22,8 +22,12 @@ fn ansi_of_dragon(suit: Suit) -> String {
     style_of_suit(suit).paint(c).to_string()
 }
 
-fn print_card(card: &Card, is_head: bool) -> String {
+fn print_card(card: &Card, is_head: bool) -> Vec<String> {
+    let mut ret = vec![];
     if is_head {
+        ret.push("╭────────╮ ".to_string());
+    }
+    ret.push(if is_head {
         match *card {
             Card::Dragon(s) => format!("│ {}      │ ", ansi_of_dragon(s)),
             Card::Flower => format!("│  ~~~~  │ "),
@@ -35,7 +39,11 @@ fn print_card(card: &Card, is_head: bool) -> String {
             Card::Flower => format!("│  ~~~~  │ "),
             Card::Number(s, n) => format!("│      {} │ ", style_of_suit(s).paint(n.to_string()), ),
         }
+    });
+    if !is_head {
+        ret.push("╰────────╯ ".to_string());
     }
+    ret
 }
 
 // Card drawing: each non-topmost card consists of 1 'head' piece (where 1 piece == 2 lines)
@@ -68,14 +76,12 @@ fn print_tableau(playfield: &Playfield) {
             let is_tail = piece_index == column_height + 2 && !cards_in_column.is_empty();
 
             if is_head {
-                column_lines.push("╭────────╮ ".to_string());
-                column_lines.push(print_card(cards_in_column.get(piece_index).unwrap(), true));
+                column_lines.extend(print_card(cards_in_column.get(piece_index).unwrap(), true));
             } else if is_filler {
                 column_lines.push("│        │ ".to_string());
                 column_lines.push("│        │ ".to_string());
             } else if is_tail {
-                column_lines.push(print_card(cards_in_column.get(piece_index - 3).unwrap(), false));
-                column_lines.push("╰────────╯ ".to_string());
+                column_lines.extend(print_card(cards_in_column.get(piece_index - 3).unwrap(), false));
             } else {
                 column_lines.push("           ".to_string());
                 column_lines.push("           ".to_string());
