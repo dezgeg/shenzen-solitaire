@@ -385,3 +385,15 @@ fn test_flip_dragons_no_space() {
         .with_tableau_column(3, vec![Card::Dragon(Suit::Black)]);
     assert!(flip_dragon(pf, Suit::Black) == None);
 }
+
+#[test]
+fn test_flip_dragons_all_in_freecells() {
+    let pf = Playfield::empty().with_freecell_cards(vec![], FreeCell::InUse(Card::Dragon(Suit::Red)))
+        .with_tableau_column(0, vec![Card::Flower, Card::Dragon(Suit::Red)]);
+    if let Some(npf) = flip_dragon(pf, Suit::Red) {
+        assert_eq!(npf.freecells, [FreeCell::Free, FreeCell::Free, FreeCell::Flipped]);
+        assert_eq!(npf.tableau[0], vec![Card::Flower]);
+    } else {
+        assert!(false);
+    }
+}
