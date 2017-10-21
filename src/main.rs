@@ -46,6 +46,13 @@ fn print_card(card: &Card, is_head: bool) -> Vec<String> {
     ret
 }
 
+fn empty_column() -> Vec<String> {
+    vec![
+        "           ".to_string(),
+        "           ".to_string(),
+    ]
+}
+
 // Card drawing: each non-topmost card consists of 1 'head' piece (where 1 piece == 2 lines)
 // and the topmost card consists of 4 pieces (head, 2 filler, tail)
 //╭────────╮\ head
@@ -83,8 +90,7 @@ fn print_tableau(playfield: &Playfield) {
             } else if is_tail {
                 column_lines.extend(print_card(cards_in_column.get(piece_index - 3).unwrap(), false));
             } else {
-                column_lines.push("           ".to_string());
-                column_lines.push("           ".to_string());
+                column_lines.extend(empty_column());
             }
         }
         prints.push(column_lines);
@@ -98,24 +104,43 @@ fn print_tableau(playfield: &Playfield) {
 }
 
 fn print_top(playfield: &Playfield) {
-    for piece_index in 0..4 {
-        for line in 1..3 {
-            // Draw freecell pieces
-            for fc in 0..4 {
-
+    let mut prints: Vec<Vec<String>> = vec![];
+    for fc in playfield.freecells.iter() {
+        match fc {
+            &FreeCell::InUse(c) => {
+                prints.push(print_card(&c, true));
             }
-            // Draw some empty space
-
-            // Draw the piles
+            _ => panic!("write me"),
         }
+    }
+
+    // Draw flower here
+    prints.push(empty_column());
+    prints.push(empty_column());
+
+    for p in playfield.piles.iter() {
+        match p {
+            &Some(c) => {
+                prints.push(print_card(&c, true));
+            }
+            _ => panic!("write me"),
+        }
+    }
+
+    for i in 0..prints[0].len() {
+        for j in 0..playfield.tableau.len() {
+            print!("{}", prints[j][i]);
+        }
+        println!();
     }
 }
 
 fn main() {
     let render_test = Playfield {
-        freecells: [FreeCell::Free, FreeCell::Flipped, FreeCell::InUse(Card::Dragon(Suit::Black))],
+        //freecells: [FreeCell::Free, FreeCell::Flipped, FreeCell::InUse(Card::Dragon(Suit::Black))],
+        freecells: [FreeCell::InUse(Card::Dragon(Suit::Black)), FreeCell::InUse(Card::Dragon(Suit::Black)), FreeCell::InUse(Card::Dragon(Suit::Black))],
         flower: Some(Card::Flower),
-        piles: [None, Some(Card::Number(Suit::Green, 1)), Some(Card::Number(Suit::Black, 9))],
+        piles: [Some(Card::Number(Suit::Red, 4)), Some(Card::Number(Suit::Green, 1)), Some(Card::Number(Suit::Black, 9))],
         tableau: [
             /* 0 */ vec![],
             /* 1 */ vec![Card::Number(Suit::Red, 1)],
@@ -129,6 +154,7 @@ fn main() {
     };
     //print_playfield(&make_shuffled_playfield());
     print_top(&render_test);
+    println!();
     print_tableau(&render_test);
 }
 
