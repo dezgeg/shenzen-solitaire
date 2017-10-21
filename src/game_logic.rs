@@ -259,6 +259,40 @@ pub fn is_legal_move(playfield: &Playfield, m: Move) -> bool {
     }
 }
 
+pub fn flip_dragon(playfield: Playfield, suit: Suit) -> Option<Playfield> {
+    let mut new_pf: Playfield = playfield;
+
+    let mut dst = -1isize;
+    let mut count = 0usize;
+    for i in 0..new_pf.freecells.len() {
+        match new_pf.freecells[i] {
+            FreeCell::InUse(Card::Dragon(s)) if s == suit => {
+                new_pf.freecells[i] = FreeCell::Free;
+                count = count + 1;
+                dst = i as isize;
+            }
+            FreeCell::Free => {
+                dst = i as isize;
+            }
+            _ => {}
+        }
+    }
+    for i in 0..new_pf.tableau.len() {
+        match new_pf.tableau[i].last() {
+            Some(&Card::Dragon(s)) if s == suit => {
+                new_pf.tableau[i].pop();
+                count = count + 1;
+            }
+            _ => (),
+        }
+    }
+    if count != 4 || dst < 0 {
+        return None;
+    }
+    new_pf.freecells[dst as usize] = FreeCell::Flipped;
+    Some(new_pf)
+}
+
 fn make_test_playfield() -> Playfield {
     Playfield {
         freecells: [FreeCell::Free, FreeCell::Flipped, FreeCell::InUse(Card::Dragon(Suit::Black))],
@@ -305,4 +339,46 @@ fn test_is_legal_move() {
     assert!(is_legal_move(&playfield, Move(1, Position::Tableau(4), Position::Tableau(2))));
     // Moving two cards (Red 4, Green 3) to (Black 5): Allowed
     assert!(is_legal_move(&playfield, Move(2, Position::Tableau(2), Position::Tableau(6))));
+}
+
+#[test]
+fn test_flip_dragons_on_top_of_each_other() {
+    // Can't flip since two dragons are on top of each other
+    let pf = Playfield {
+        freecells: [FreeCell::Free, FreeCell::Free, FreeCell::InUse(Card::Dragon(Suit::Black))],
+        flower: None,
+        piles: [None, None, None],
+        tableau: [
+            /* 0 */ vec![Card::Dragon(Suit::Black), Card::Dragon(Suit::Black)],
+            /* 1 */ vec![],
+            /* 2 */ vec![Card::Number(Suit::Red, 4), Card::Dragon(Suit::Black)],
+            /* 3 */ vec![],
+            /* 4 */ vec![],
+            /* 5 */ vec![],
+            /* 6 */ vec![],
+            /* 7 */ vec![],
+        ]
+    };
+    assert!(flip_dragon(pf, Suit::Black) == None);
+}
+
+#[test]
+fn test_flip_dragons_no_space() {
+    // No room in free cells, can't flip
+    let pf = Playfield {
+        freecells: [FreeCell::InUse(Card::Dragon(Suit::Red)), FreeCell::Flipped, FreeCell::InUse(Card::Dragon(Suit::Red))],
+        flower: None,
+        piles: [None, None, None],
+        tableau: [
+            /* 0 */ vec![Card::Dragon(Suit::Black)],
+            /* 1 */ vec![Card::Dragon(Suit::Black)],
+            /* 2 */ vec![Card::Number(Suit::Red, 4), Card::Dragon(Suit::Black)],
+            /* 3 */ vec![Card::Dragon(Suit::Black)],
+            /* 4 */ vec![],
+            /* 5 */ vec![],
+            /* 6 */ vec![],
+            /* 7 */ vec![],
+        ]
+    };
+    assert!(flip_dragon(pf, Suit::Black) == None);
 }
