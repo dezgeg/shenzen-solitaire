@@ -81,16 +81,22 @@ impl Clone for Playfield {
     }
 }
 
+impl Playfield {
+    fn empty() -> Playfield {
+        Playfield {
+            freecells: [FreeCell::Free, FreeCell::Free, FreeCell::Free],
+            flower: None,
+            piles: [None, None, None],
+            tableau: [vec![], vec![], vec![], vec![], vec![], vec![], vec![], vec![]]
+        }
+    }
+}
+
 // Creates a shuffled, initial state of the game.
 // That is, all the 40 cards are evenly shuffled into the 8 tableau columns and the rest is empty.
 pub fn make_shuffled_playfield() -> Playfield {
     let mut deck = make_shuffled_deck();
-    let mut ret = Playfield {
-        freecells: [FreeCell::Free, FreeCell::Free, FreeCell::Free],
-        flower: None,
-        piles: [None, None, None],
-        tableau: [vec![], vec![], vec![], vec![], vec![], vec![], vec![], vec![]]
-    };
+    let mut ret = Playfield::empty();
 
     for col in 0..8 {
         for row in 0..5 {
