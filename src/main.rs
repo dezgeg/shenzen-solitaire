@@ -53,6 +53,13 @@ fn empty_column() -> Vec<String> {
     ]
 }
 
+fn filler_column() -> Vec<String> {
+    vec![
+        "│        │ ".to_string(),
+        "│        │ ".to_string(),
+    ]
+}
+
 // Card drawing: each non-topmost card consists of 1 'head' piece (where 1 piece == 2 lines)
 // and the topmost card consists of 4 pieces (head, 2 filler, tail)
 //╭────────╮\ head
@@ -85,8 +92,7 @@ fn print_tableau(playfield: &Playfield) {
             if is_head {
                 column_lines.extend(print_card(cards_in_column.get(piece_index).unwrap(), true));
             } else if is_filler {
-                column_lines.push("│        │ ".to_string());
-                column_lines.push("│        │ ".to_string());
+                column_lines.extend(filler_column())
             } else if is_tail {
                 column_lines.extend(print_card(cards_in_column.get(piece_index - 3).unwrap(), false));
             } else {
