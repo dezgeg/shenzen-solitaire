@@ -22,7 +22,7 @@ fn ansi_of_dragon(suit: Suit) -> String {
     style_of_suit(suit).paint(c).to_string()
 }
 
-fn print_card(card: &Card, is_head: bool) -> Vec<String> {
+fn print_card_main_part(card: &Card, is_head: bool) -> Vec<String> {
     let mut ret = vec![];
     if is_head {
         ret.push("╭────────╮ ".to_string());
@@ -90,11 +90,11 @@ fn print_tableau(playfield: &Playfield) {
             let is_tail = piece_index == column_height + 2 && !cards_in_column.is_empty();
 
             if is_head {
-                column_lines.extend(print_card(cards_in_column.get(piece_index).unwrap(), true));
+                column_lines.extend(print_card_main_part(cards_in_column.get(piece_index).unwrap(), true));
             } else if is_filler {
                 column_lines.extend(filler_column())
             } else if is_tail {
-                column_lines.extend(print_card(cards_in_column.get(piece_index - 3).unwrap(), false));
+                column_lines.extend(print_card_main_part(cards_in_column.get(piece_index - 3).unwrap(), false));
             } else {
                 column_lines.extend(empty_column());
             }
@@ -114,7 +114,7 @@ fn print_top(playfield: &Playfield) {
     for fc in playfield.freecells.iter() {
         match fc {
             &FreeCell::InUse(c) => {
-                prints.push(print_card(&c, true));
+                prints.push(print_card_main_part(&c, true));
             }
             _ => panic!("write me"),
         }
@@ -127,7 +127,7 @@ fn print_top(playfield: &Playfield) {
     for p in playfield.piles.iter() {
         match p {
             &Some(c) => {
-                prints.push(print_card(&c, true));
+                prints.push(print_card_main_part(&c, true));
             }
             _ => panic!("write me"),
         }
