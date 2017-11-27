@@ -69,6 +69,26 @@ fn print_card(card: &Card) -> Vec<String> {
     ret
 }
 
+fn print_flipped_card() -> Vec<String> {
+    let mut ret = vec![];
+    ret.push("╭────────╮ ".to_string());
+    for i in 0..6 {
+        ret.push("│▒▒▒▒▒▒▒▒│ ".to_string());
+    }
+    ret.push("╰────────╯ ".to_string());
+    ret
+}
+
+fn print_free_card() -> Vec<String> {
+    let mut ret = vec![];
+    ret.push("╭────────╮ ".to_string());
+    for i in 0..6 {
+        ret.push("│        │ ".to_string());
+    }
+    ret.push("╰────────╯ ".to_string());
+    ret
+}
+
 // Card drawing: each non-topmost card consists of 1 'head' piece (where 1 piece == 2 lines)
 // and the topmost card consists of 4 pieces (head, 2 filler, tail)
 //╭────────╮\ head
@@ -124,8 +144,13 @@ fn print_top(playfield: &Playfield) {
         match fc {
             &FreeCell::InUse(c) => {
                 prints.push(print_card(&c));
+            },
+            &FreeCell::Flipped => {
+                prints.push(print_flipped_card());
+            },
+            &FreeCell::Free => {
+                prints.push(print_free_card());
             }
-            _ => panic!("write me"),
         }
     }
 
@@ -163,7 +188,7 @@ fn print_top(playfield: &Playfield) {
 fn main() {
     let render_test = Playfield {
         //freecells: [FreeCell::Free, FreeCell::Flipped, FreeCell::InUse(Card::Dragon(Suit::Black))],
-        freecells: [FreeCell::InUse(Card::Dragon(Suit::Black)), FreeCell::InUse(Card::Dragon(Suit::Black)), FreeCell::InUse(Card::Dragon(Suit::Black))],
+        freecells: [FreeCell::InUse(Card::Dragon(Suit::Black)), FreeCell::Flipped, FreeCell::Free],
         flower: Some(Card::Flower),
         piles: [Some(Card::Number(Suit::Red, 4)), Some(Card::Number(Suit::Green, 1)), Some(Card::Number(Suit::Black, 9))],
         tableau: [
