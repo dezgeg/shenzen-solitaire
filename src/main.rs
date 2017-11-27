@@ -60,6 +60,15 @@ fn filler_column() -> Vec<String> {
     ]
 }
 
+fn print_card(card: &Card) -> Vec<String> {
+    let mut ret = vec![];
+    ret.extend(print_card_main_part(card, true));
+    ret.extend(filler_column());
+    ret.extend(filler_column());
+    ret.extend(print_card_main_part(card, false));
+    ret
+}
+
 // Card drawing: each non-topmost card consists of 1 'head' piece (where 1 piece == 2 lines)
 // and the topmost card consists of 4 pieces (head, 2 filler, tail)
 //╭────────╮\ head
@@ -114,20 +123,30 @@ fn print_top(playfield: &Playfield) {
     for fc in playfield.freecells.iter() {
         match fc {
             &FreeCell::InUse(c) => {
-                prints.push(print_card_main_part(&c, true));
+                prints.push(print_card(&c));
             }
             _ => panic!("write me"),
         }
     }
 
     // Draw flower here
-    prints.push(empty_column());
-    prints.push(empty_column());
+    let tmp = vec![
+        "           ".to_string(),
+        "           ".to_string(),
+        "           ".to_string(),
+        "           ".to_string(),
+        "           ".to_string(),
+        "           ".to_string(),
+        "           ".to_string(),
+        "           ".to_string(),
+    ];
+    prints.push(tmp.clone());
+    prints.push(tmp);
 
     for p in playfield.piles.iter() {
         match p {
             &Some(c) => {
-                prints.push(print_card_main_part(&c, true));
+                prints.push(print_card(&c));
             }
             _ => panic!("write me"),
         }
