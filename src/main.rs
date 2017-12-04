@@ -9,7 +9,7 @@ fn style_of_suit(suit: Suit) -> Style {
     match suit {
         Suit::Red => Style::new().fg(Colour::Red),
         Suit::Green => Style::new().fg(Colour::Green),
-        Suit::Black => Style::new().fg(Colour::White),
+        Suit::Black => Style::new().fg(Colour::Blue),
     }
 }
 
@@ -144,28 +144,38 @@ fn print_top(playfield: &Playfield) {
         match fc {
             &FreeCell::InUse(c) => {
                 prints.push(print_card(&c));
-            },
+            }
             &FreeCell::Flipped => {
                 prints.push(print_flipped_card());
-            },
+            }
             &FreeCell::Free => {
                 prints.push(print_free_card());
             }
         }
     }
 
+    let mut tmp = vec![];
     // Draw flower & dragon symbols here
-    let tmp = vec![
-        "  ╭─╮                  ".to_string(),
-        "  ╰─╯   |        |     ".to_string(),
-        "        |        |     ".to_string(),
-        "  ╭─╮   |        |     ".to_string(),
-        "  ╰─╯   |        |     ".to_string(),
-        "        |        |     ".to_string(),
-        "  ╭─╮   |        |     ".to_string(),
-        "  ╰─╯                  ".to_string(),
+    for (i, _) in playfield.flipped_suits.iter().enumerate() {
+        tmp.extend(vec![
+            "  ╭─╮   ",
+            "  ╰─╯   ",
+            "        ",
+        ].iter().map(|x| style_of_suit(Suit::from_index(i)).paint(x.to_string()).to_string()));
+    }
+    tmp.pop();
+    let tmp2 = vec![
+        "              ".to_string(),
+        "|        |    ".to_string(),
+        "|        |    ".to_string(),
+        "|        |    ".to_string(),
+        "|        |    ".to_string(),
+        "|        |    ".to_string(),
+        "|        |    ".to_string(),
+        "              ".to_string(),
     ];
     prints.push(tmp);
+    prints.push(tmp2);
 
     for p in playfield.piles.iter() {
         match p {

@@ -12,11 +12,20 @@ pub enum Suit {
 }
 
 impl Suit {
-    fn to_index(&self) -> usize {
+    pub fn to_index(&self) -> usize {
         match self {
             Red => 0,
             Green => 1,
             Black => 2,
+        }
+    }
+
+    pub fn from_index(i: usize) -> Suit {
+        match i {
+            0 => Suit::Red,
+            1 => Suit::Green,
+            2 => Suit::Black,
+            _ => unreachable!(),
         }
     }
 }
