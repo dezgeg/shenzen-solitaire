@@ -154,18 +154,17 @@ fn print_top(playfield: &Playfield) {
         }
     }
 
-    // Draw flower here
+    // Draw flower & dragon symbols here
     let tmp = vec![
-        "           ".to_string(),
-        "           ".to_string(),
-        "           ".to_string(),
-        "           ".to_string(),
-        "           ".to_string(),
-        "           ".to_string(),
-        "           ".to_string(),
-        "           ".to_string(),
+        "  ╭─╮                  ".to_string(),
+        "  ╰─╯   |        |     ".to_string(),
+        "        |        |     ".to_string(),
+        "  ╭─╮   |        |     ".to_string(),
+        "  ╰─╯   |        |     ".to_string(),
+        "        |        |     ".to_string(),
+        "  ╭─╮   |        |     ".to_string(),
+        "  ╰─╯                  ".to_string(),
     ];
-    prints.push(tmp.clone());
     prints.push(tmp);
 
     for p in playfield.piles.iter() {
@@ -178,7 +177,7 @@ fn print_top(playfield: &Playfield) {
     }
 
     for i in 0..prints[0].len() {
-        for j in 0..playfield.tableau.len() {
+        for j in 0..prints.len() {
             print!("{}", prints[j][i]);
         }
         println!();
@@ -189,6 +188,7 @@ fn main() {
     let render_test = Playfield {
         //freecells: [FreeCell::Free, FreeCell::Flipped, FreeCell::InUse(Card::Dragon(Suit::Black))],
         freecells: [FreeCell::InUse(Card::Dragon(Suit::Black)), FreeCell::Flipped, FreeCell::Free],
+        flipped_suits: [false, false, false],
         flower: Some(Card::Flower),
         piles: [Some(Card::Number(Suit::Red, 4)), Some(Card::Number(Suit::Green, 1)), Some(Card::Number(Suit::Black, 9))],
         tableau: [

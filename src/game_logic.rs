@@ -11,6 +11,16 @@ pub enum Suit {
     Black,
 }
 
+impl Suit {
+    fn to_index(&self) -> usize {
+        match self {
+            Red => 0,
+            Green => 1,
+            Black => 2,
+        }
+    }
+}
+
 #[derive(Debug, PartialEq, Eq, Copy, Clone)]
 pub enum Card {
     Number(Suit, usize),
@@ -57,6 +67,8 @@ pub enum FreeCell {
 #[derive(Debug, PartialEq, Eq)]
 pub struct Playfield {
     pub freecells: [FreeCell; 3],
+    // Which suits are flipped?
+    pub flipped_suits: [bool; 3],
     // Should only be None or Some(Flower)
     pub flower: Option<Card>,
     // Topmost card of the pile
@@ -74,6 +86,7 @@ impl Clone for Playfield {
         }
         Playfield {
             freecells: self.freecells.clone(),
+            flipped_suits: self.flipped_suits.clone(),
             flower: self.flower,
             piles: self.piles.clone(),
             tableau: tmp,
@@ -85,6 +98,7 @@ impl Playfield {
     fn empty() -> Playfield {
         Playfield {
             freecells: [FreeCell::Free, FreeCell::Free, FreeCell::Free],
+            flipped_suits: [false, false, false],
             flower: None,
             piles: [None, None, None],
             tableau: [vec![], vec![], vec![], vec![], vec![], vec![], vec![], vec![]]
@@ -320,6 +334,7 @@ pub fn flip_dragon(playfield: Playfield, suit: Suit) -> Option<Playfield> {
 fn make_test_playfield() -> Playfield {
     Playfield {
         freecells: [FreeCell::Free, FreeCell::Flipped, FreeCell::InUse(Card::Dragon(Suit::Black))],
+        flipped_suits: [false, false, false],
         flower: Some(Card::Flower),
         piles: [None, Some(Card::Number(Suit::Green, 1)), None],
         tableau: [
