@@ -157,11 +157,12 @@ fn print_top(playfield: &Playfield) {
     let mut tmp = vec![];
     // Draw flower & dragon symbols here
     for (i, _) in playfield.flipped_suits.iter().enumerate() {
+        let style = style_of_suit(Suit::from_index(i)).bold();
         tmp.extend(vec![
             "  ╭─╮   ",
             "  ╰─╯   ",
             "        ",
-        ].iter().map(|x| style_of_suit(Suit::from_index(i)).paint(x.to_string()).to_string()));
+        ].iter().map(|x| style.paint(x.to_string()).to_string()));
     }
     tmp.pop();
     let tmp2 = vec![
