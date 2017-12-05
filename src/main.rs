@@ -183,7 +183,7 @@ fn print_top(playfield: &Playfield) {
             &Some(c) => {
                 prints.push(print_card(&c));
             }
-            _ => panic!("write me"),
+            _ => prints.push(print_free_card()),
         }
     }
 
@@ -201,7 +201,7 @@ fn print_playfield(playfield: &Playfield) {
     print_tableau(playfield);
 }
 
-fn main() {
+fn test_render() {
     let render_test = Playfield {
         //freecells: [FreeCell::Free, FreeCell::Flipped, FreeCell::InUse(Card::Dragon(Suit::Black))],
         freecells: [FreeCell::InUse(Card::Dragon(Suit::Black)), FreeCell::Flipped, FreeCell::Free],
@@ -220,6 +220,14 @@ fn main() {
         ]
     };
     print_playfield(&render_test);
-    //print_playfield(&make_shuffled_playfield());
 }
 
+fn interactive() {
+    let playfield = make_shuffled_playfield();
+
+    print_playfield(&playfield);
+}
+
+fn main() {
+    interactive();
+}
