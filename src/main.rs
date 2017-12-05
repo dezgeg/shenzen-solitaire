@@ -195,6 +195,12 @@ fn print_top(playfield: &Playfield) {
     }
 }
 
+fn print_playfield(playfield: &Playfield) {
+    print_top(playfield);
+    println!();
+    print_tableau(playfield);
+}
+
 fn main() {
     let render_test = Playfield {
         //freecells: [FreeCell::Free, FreeCell::Flipped, FreeCell::InUse(Card::Dragon(Suit::Black))],
@@ -213,9 +219,7 @@ fn main() {
             /* 7 */ vec![Card::Number(Suit::Red, 1), Card::Number(Suit::Black, 2), Card::Number(Suit::Green, 3), Card::Number(Suit::Red, 4), Card::Number(Suit::Black, 9), Card::Number(Suit::Black, 8), Card::Number(Suit::Black, 7), Card::Number(Suit::Black, 6), Card::Number(Suit::Black, 5), Card::Number(Suit::Black, 4), Card::Number(Suit::Black, 3), Card::Number(Suit::Black, 2), Card::Number(Suit::Black, 1), ],
         ]
     };
+    print_playfield(&render_test);
     //print_playfield(&make_shuffled_playfield());
-    print_top(&render_test);
-    println!();
-    print_tableau(&render_test);
 }
 
