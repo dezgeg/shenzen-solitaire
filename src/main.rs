@@ -4,6 +4,8 @@ extern crate ansi_term;
 
 use ansi_term::{ANSIString, Colour, Style};
 use game_logic::*;
+use std::io;
+use std::io::Write;
 
 fn style_of_suit(suit: Suit) -> Style {
     match suit {
@@ -222,10 +224,26 @@ fn test_render() {
     print_playfield(&render_test);
 }
 
+fn clear() {
+    print!("\x1b[H\x1b[2J");
+    io::stdout().flush();
+}
+
 fn interactive() {
     let playfield = make_shuffled_playfield();
 
-    print_playfield(&playfield);
+    loop {
+        clear();
+        print_playfield(&playfield);
+        println!();
+
+        print!("Enter move: ");
+        io::stdout().flush();
+
+        let mut buf = String::new();
+        io::stdin().read_line(&mut buf);
+        println!();
+    }
 }
 
 fn main() {
